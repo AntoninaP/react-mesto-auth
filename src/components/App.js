@@ -9,8 +9,10 @@ import EditAvatarPopup from "./EditAvatarPopup";
 import AddPlacePopup from "./AddPlacePopup";
 import Login from "./Login";
 import Register from "./Register";
+import InfoTooltip from "./InfoTooltip";
 import newApi from "../utils/api";
 import {CurrentUserContext} from "../contexts/CurrentUserContext";
+import {Route, Switch} from "react-router-dom";
 
 function App() {
 
@@ -27,8 +29,8 @@ function App() {
     // Отправляем запрос в API и получаем обновлённые данные карточки
     newApi.changeLikeCardStatus(card._id, !isLiked)
       .then((newCard) => {
-      setCards((state) => state.map((c) => c._id === card._id ? newCard : c));
-    })
+        setCards((state) => state.map((c) => c._id === card._id ? newCard : c));
+      })
       .catch((err) => {
         console.log('error', err)
       })
@@ -37,8 +39,8 @@ function App() {
   function handleCardDelete(card) {
     newApi.deleteCard(card._id)
       .then(() => {
-      setCards((state) => state.filter((c) => c._id !== card._id));
-    })
+        setCards((state) => state.filter((c) => c._id !== card._id));
+      })
       .catch((err) => {
         console.log('error', err)
       })
@@ -125,6 +127,7 @@ function App() {
         closeAllPopups();
       }
     }
+
     window.addEventListener('keydown', handleEscClose);
   }, [])
 
@@ -133,23 +136,32 @@ function App() {
       <div className="root">
         <div className="page">
           <Header/>
-          <Login/>
-          <Main
-            onEditProfile={handleEditProfileClick}
-            onEditAvatar={handleEditAvatarClick}
-            onAddPlace={handleAddPlaceClick}
-            onCardClick={handleCardClick}
-            cards={cards}
-            onCardLike={handleCardLike}
-            onCardDelete={handleCardDelete}
-          />
-          <Footer/>
+          <Switch>
+            <Route exact path="/">
+              <Main
+                onEditProfile={handleEditProfileClick}
+                onEditAvatar={handleEditAvatarClick}
+                onAddPlace={handleAddPlaceClick}
+                onCardClick={handleCardClick}
+                cards={cards}
+                onCardLike={handleCardLike}
+                onCardDelete={handleCardDelete}
+              />
+            </Route>
+            <Route path="/sign-in">
+              <Login/>
+            </Route>
+            <Route path="/sign-up">
+              <Register/>
+            </Route>
+            <Footer/>
+          </Switch>
           <EditProfilePopup isOpen={isEditProfilePopupOpen}
                             onClose={closeAllPopups}
                             onUpdateUser={handleUpdateUser}/>
-          <AddPlacePopup isOpen={isAddPlacePopupOpen}
-                         onClose={closeAllPopups}
-                         onAddPlace={handleAddPlaceSubmit}/>
+          {/*<AddPlacePopup isOpen={isAddPlacePopupOpen}*/}
+          {/*               onClose={closeAllPopups}*/}
+          {/*               onAddPlace={handleAddPlaceSubmit}/>*/}
 
           <ImagePopup onClose={closeAllPopups} card={selectedCard}/>
 
@@ -159,6 +171,8 @@ function App() {
 
           <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups}
                            onUpdateAvatar={handleUpdateAvatar}/>
+          <InfoTooltip isOpen={isAddPlacePopupOpen}
+                       onClose={closeAllPopups}/>
         </div>
       </div>
     </CurrentUserContext.Provider>

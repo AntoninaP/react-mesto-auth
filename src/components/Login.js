@@ -6,7 +6,7 @@ function Login() {
 
   return(
     <div className="popup__form popup__form_login">
-      <h3 className="popup__title">Вход</h3>
+      <h3 className="popup__title popup__title_login">Вход</h3>
       <label>
         <input id="email-input" type="email" name="email" value=''
                className="popup__input popup__input_login"

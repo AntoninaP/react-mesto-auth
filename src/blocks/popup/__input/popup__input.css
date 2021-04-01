@@ -8,6 +8,7 @@
     line-height: calc(17 / 14);
     font-weight: normal;
     font-style: normal;
+
 }
 
 @media screen and (max-width: 600px) {

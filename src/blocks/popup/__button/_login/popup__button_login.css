@@ -1,6 +1,9 @@
 .popup__button_login {
     color: black;
     background-color: #FFFFFF;
+    margin-top: 216px;
+    margin-bottom: 0;
+    padding: 14px 0 14px 0;
 }
 
 .popup__button:hover {
