@@ -10,9 +10,11 @@ import AddPlacePopup from "./AddPlacePopup";
 import Login from "./Login";
 import Register from "./Register";
 import InfoTooltip from "./InfoTooltip";
+import * as Auth from "./Auth";
 import newApi from "../utils/api";
 import {CurrentUserContext} from "../contexts/CurrentUserContext";
-import {Route, Switch} from "react-router-dom";
+import {Route, Switch, Redirect, useLocation, useHistory} from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 
 function App() {
 
@@ -22,6 +24,27 @@ function App() {
   const [selectedCard, setCard] = React.useState(null);
   const [currentUser, setCurrentUser] = React.useState({name: '', about: '', avatar: ''});
   const [cards, setCards] = React.useState([]);
+
+  //константы для регистрации, авторизации
+  const [data, setData] = React.useState({
+    email: '',
+    password: ''
+  });
+  const [loggedIn, setLoggedIn] = React.useState(false);
+  //переход по ссылкам в шапке профиля регистрация-войти
+  const {pathname} = useLocation();
+  const history = useHistory();
+  const [isInfoTooltipOpen, setInfoToolTipOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (loggedIn) {
+      history.push('/');
+    }
+  }, [history, loggedIn])
+
+  React.useEffect(() => {
+    tokenCheck()
+  }, [])
 
   function handleCardLike(card) {
     // Снова проверяем, есть ли уже лайк на этой карточке
@@ -118,6 +141,7 @@ function App() {
     setIsEditAvatarPopupOpen(false);
     setIsEditProfilePopupOpen(false);
     setCard(null)
+    setInfoToolTipOpen(false);
   }
 
   React.useEffect(() => {
@@ -131,37 +155,99 @@ function App() {
     window.addEventListener('keydown', handleEscClose);
   }, [])
 
+  //методы для регистрации, авторизации
+  function handleRegistration({email, password}) {
+    console.log({email, password})
+    Auth.registration({email, password})
+      .then((res) => {
+        if (!res || res.statusCode === 400)
+        {
+          handleRegistrSucsess()
+        } //поменять на попап с ошибкой
+        handleRegistrSucsess();
+        history.push('/signin')
+        return res
+      })
+      .catch((err) => {
+        console.log('error', err)
+      })
+  }
+
+  function handleRegistrSucsess() {
+    setInfoToolTipOpen(true);
+  }
+
+  function handleAuthorization({email, password}) {
+    console.log({email, password})
+    Auth.authorization({email, password})
+      .then((data) => {
+        console.log(data)
+        if (!data)
+        {throw new Error('Неверный логин или пароль')}
+        if (data.jwt) {
+          localStorage.setItem('jwt', data.jwt);
+          setLoggedIn(true);
+          // переход не происходит, но и ошибки нет...
+          history.push('/');
+          return data;
+        }
+      })
+      .catch((err) => {
+        console.log('error', err)
+      })
+  }
+
+  const tokenCheck = () => {
+    if (localStorage.getItem('jwt')) {
+      let jwt = localStorage.getItem('jwt');
+      Auth.getContent(jwt)
+        .then(({email, password}) => {
+          if (email) {
+            setLoggedIn(true);
+            setData({email, password})
+          }
+        })
+        .catch((err) => {
+          console.log('error', err)
+        })
+    }
+  }
+
   return (
     <CurrentUserContext.Provider value={currentUser}>
       <div className="root">
         <div className="page">
-          <Header/>
+          <Header currentPath={pathname}/>
           <Switch>
-            <Route exact path="/">
-              <Main
-                onEditProfile={handleEditProfileClick}
-                onEditAvatar={handleEditAvatarClick}
-                onAddPlace={handleAddPlaceClick}
-                onCardClick={handleCardClick}
-                cards={cards}
-                onCardLike={handleCardLike}
-                onCardDelete={handleCardDelete}
-              />
+            <ProtectedRoute
+              exact path="/"
+              loggedIn={loggedIn}
+              component={Main}
+              onEditProfile={handleEditProfileClick}
+              onEditAvatar={handleEditAvatarClick}
+              onAddPlace={handleAddPlaceClick}
+              onCardClick={handleCardClick}
+              cards={cards}
+              onCardLike={handleCardLike}
+              onCardDelete={handleCardDelete}
+            />
+            <Route path="/signin">
+              <Login onAutorization={handleAuthorization}/>
             </Route>
-            <Route path="/sign-in">
-              <Login/>
+            <Route path="/signup">
+              <Register onRegister={handleRegistration}/>
             </Route>
-            <Route path="/sign-up">
-              <Register/>
+            <Route>
+              {loggedIn ? (<Redirect to="/"/>) : (<Redirect to="/signin"/>)}
             </Route>
-            <Footer/>
           </Switch>
+          <Footer/>
           <EditProfilePopup isOpen={isEditProfilePopupOpen}
                             onClose={closeAllPopups}
                             onUpdateUser={handleUpdateUser}/>
-          {/*<AddPlacePopup isOpen={isAddPlacePopupOpen}*/}
-          {/*               onClose={closeAllPopups}*/}
-          {/*               onAddPlace={handleAddPlaceSubmit}/>*/}
+          <AddPlacePopup isOpen={isAddPlacePopupOpen}
+                         onClose={closeAllPopups}
+                         onAddPlace={handleAddPlaceSubmit}/>
 
           <ImagePopup onClose={closeAllPopups} card={selectedCard}/>
 
@@ -171,7 +257,7 @@ function App() {
 
           <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups}
                            onUpdateAvatar={handleUpdateAvatar}/>
-          <InfoTooltip isOpen={isAddPlacePopupOpen}
+          <InfoTooltip isOpen={isInfoTooltipOpen}
                        onClose={closeAllPopups}/>
         </div>
       </div>

@@ -4,7 +4,7 @@ function PopupWithForm(props) {
 
   return (
     <div className={`popup popup-${props.name} ${props.isEditProfilePopupOpen ||
-    props.isAddPlacePopupOpen || props.isEditAvatarPopupOpen ? 'popup_opened' : ''}`}>
+    props.isAddPlacePopupOpen || props.isEditAvatarPopupOpen || props.isInfoTooltipOpen ? 'popup_opened' : ''}`}>
       <div className="popup__container">
         <button type="button" className="popup__close-button"
                 onClick={props.closeAllPopups}>

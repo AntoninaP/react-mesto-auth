@@ -1,29 +1,47 @@
 import React from "react";
 
+function Login(props) {
 
+  const [data, setData] = React.useState({
+    email: '',
+    password: ''
+  });
 
-function Login() {
+  function handleChange(e) {
+    const {name, value} = e.target;
+    setData({
+      ...data,
+      [name]: value
+    })
+  }
+
+  function handleSubmit(e) {
+    let {email, password} = data;
+    e.preventDefault();
+    console.log(data);
+    props.onAutorization({email, password})
+  }
 
   return(
-    <div className="popup__form popup__form_login">
+    <form className="popup__form popup__form_login" onSubmit={handleSubmit}>
       <h3 className="popup__title popup__title_login">Вход</h3>
       <label>
-        <input id="email-input" type="email" name="email" value=''
+        <input id="email" type="email" name="email" value={data.email}
                className="popup__input popup__input_login"
                placeholder="Email" required minLength="2" maxLength="40"
-               pattern="([A-z0-9_.-]{1,})@([A-z0-9_.-]{1,}).([A-z]{2,8})"/>
+               pattern="([A-z0-9_.-]{1,})@([A-z0-9_.-]{1,}).([A-z]{2,8})" onChange={handleChange}/>
         <span className="popup__input-error">
             </span>
       </label>
       <label>
-        <input id="password-input" type="text" name="password" value=''
+        <input id="password" type="text" name="password" value={data.password}
                className="popup__input popup__input_login"
-               placeholder="Пароль" required minLength="2" maxLength="10"/>
+               placeholder="Пароль" required minLength="2" maxLength="10" onChange={handleChange}/>
         <span className="popup__input-error">
             </span>
       </label>
       <button type="submit" className="popup__button popup__button_login">Войти</button>
-    </div>
+    </form>
   )
 }
 
