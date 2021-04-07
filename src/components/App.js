@@ -30,11 +30,13 @@ function App() {
     email: '',
     password: ''
   });
+
   const [loggedIn, setLoggedIn] = React.useState(false);
   //переход по ссылкам в шапке профиля регистрация-войти
   const {pathname} = useLocation();
   const history = useHistory();
   const [isInfoTooltipOpen, setInfoToolTipOpen] = React.useState(false);
+  const [registerStatus, setRegisterStatus] = React.useState(false);
 
   React.useEffect(() => {
     if (loggedIn) {
@@ -160,11 +162,16 @@ function App() {
     console.log({email, password})
     Auth.registration({email, password})
       .then((res) => {
-        if (!res || res.statusCode === 400)
-        {
-          handleRegistrSucsess()
-        } //поменять на попап с ошибкой
-        handleRegistrSucsess();
+        console.log(res)
+        if (!res || res.statusCode === 400) {
+          setRegisterStatus(false)
+          handleRegister()
+          setData({email: '', password: ''}) //почему не обнуляются поля?
+          return
+        }
+
+        setRegisterStatus(true)
+        handleRegister();
         history.push('/signin')
         return res
       })
@@ -173,21 +180,20 @@ function App() {
       })
   }
 
-  function handleRegistrSucsess() {
+  function handleRegister() {
     setInfoToolTipOpen(true);
   }
 
   function handleAuthorization({email, password}) {
-    console.log({email, password})
     Auth.authorization({email, password})
       .then((data) => {
         console.log(data)
-        if (!data)
-        {throw new Error('Неверный логин или пароль')}
-        if (data.jwt) {
-          localStorage.setItem('jwt', data.jwt);
+        if (!data) {throw new Error('Неверный логин или пароль')}
+
+        if (data.token) {
+          console.log(data.token)
+          localStorage.setItem('jwt', data.token);
           setLoggedIn(true);
-          // переход не происходит, но и ошибки нет...
           history.push('/');
           return data;
         }
@@ -204,7 +210,7 @@ function App() {
         .then(({email, password}) => {
           if (email) {
             setLoggedIn(true);
-            setData({email, password})
+            // setData({email, password})
           }
         })
         .catch((err) => {
@@ -213,11 +219,19 @@ function App() {
     }
   }
 
+  function handleLogOut() {
+    localStorage.removeItem('jwt');
+    history.push('/signin');
+  }
+
   return (
     <CurrentUserContext.Provider value={currentUser}>
       <div className="root">
         <div className="page">
-          <Header currentPath={pathname}/>
+          <Header currentPath={pathname}
+                  onLogOut={handleLogOut}
+                  email={data.email}
+                  />
           <Switch>
             <ProtectedRoute
               exact path="/"
@@ -232,7 +246,10 @@ function App() {
               onCardDelete={handleCardDelete}
             />
             <Route path="/signin">
-              <Login onAutorization={handleAuthorization}/>
+              <Login
+                data={data}
+                onEnter={setData}
+                onAutorization={handleAuthorization}/>
             </Route>
             <Route path="/signup">
               <Register onRegister={handleRegistration}/>
@@ -241,7 +258,7 @@ function App() {
               {loggedIn ? (<Redirect to="/"/>) : (<Redirect to="/signin"/>)}
             </Route>
           </Switch>
-          <Footer/>
+          {loggedIn && <Footer/>}
           <EditProfilePopup isOpen={isEditProfilePopupOpen}
                             onClose={closeAllPopups}
                             onUpdateUser={handleUpdateUser}/>
@@ -258,6 +275,7 @@ function App() {
           <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups}
                            onUpdateAvatar={handleUpdateAvatar}/>
           <InfoTooltip isOpen={isInfoTooltipOpen}
+                       isRegisterSuccessful={registerStatus}
                        onClose={closeAllPopups}/>
         </div>
       </div>

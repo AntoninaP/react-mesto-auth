@@ -12,13 +12,12 @@ const [data, setData] = React.useState({
   function handleSubmit(e) {
     let {email, password} = data;
     e.preventDefault();
-    console.log(data)
+    setData({email: '', password: ''})
     props.onRegister({email, password})
   }
 
   function handleChange(e) {
     const {name, value} = e.target;
-    console.log(name, value)
     setData({
       ...data,
       [name]: value
@@ -37,7 +36,7 @@ const [data, setData] = React.useState({
             </span>
     </label>
     <label>
-      <input id="password" type="text" name="password" value={data.password}
+      <input id="password" type="password" name="password" value={data.password}
              className="popup__input popup__input_login"
              placeholder="Пароль" required minLength="2" maxLength="10" onChange={handleChange}/>
       <span className="popup__input-error">

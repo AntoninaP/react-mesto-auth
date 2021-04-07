@@ -18,13 +18,6 @@ export const authorization = ({email, password}) => {
     body: JSON.stringify({email, password})
   })
     .then(checkResponse)
-    // .then((data) => {
-    //   console.log(data)
-    //   if (data.jwt){
-    //     localStorage.setItem('jwt', data.jwt);
-    //     return data;
-    //   }
-    // })
 }
 
 export const getContent = (token) => {
@@ -43,5 +36,4 @@ export const checkResponse = (res) => {
   if (res.ok) {
     return res.json();
   }
-  // return Promise.reject(`Ошибка ${res.status}`);
 }
