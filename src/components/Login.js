@@ -1,11 +1,6 @@
 import React from "react";
 
 function Login(props) {
-  //
-  // const [data, setData] = React.useState({
-  //   email: '',
-  //   password: ''
-  // });
 
   function handleChange(e) {
     const {name, value} = e.target;
@@ -16,13 +11,13 @@ function Login(props) {
   }
 
   function handleSubmit(e) {
-    let {email, password} = props.data;
+    const {email, password} = props.data;
     e.preventDefault();
     console.log(props.data);
     props.onAutorization({email, password})
   }
 
-  return(
+  return (
     <form className="popup__form popup__form_login" onSubmit={handleSubmit}>
       <h3 className="popup__title popup__title_login">Вход</h3>
       <label>
@@ -34,14 +29,14 @@ function Login(props) {
             </span>
       </label>
       <label>
-        <input id="password" type="text" name="password" value={props.data.password}
+        <input id="password" type="password" name="password" value={props.data.password}
                className="popup__input popup__input_login"
                placeholder="Пароль" required minLength="2" maxLength="10" onChange={handleChange}/>
         <span className="popup__input-error">
             </span>
       </label>
       <button type="submit" className="popup__button popup__button_login">Войти</button>
-      <p className="popup__subtitle"> </p>
+      <p className="popup__subtitle"></p>
     </form>
   )
 }

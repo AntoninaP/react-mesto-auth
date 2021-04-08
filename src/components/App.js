@@ -10,7 +10,7 @@ import AddPlacePopup from "./AddPlacePopup";
 import Login from "./Login";
 import Register from "./Register";
 import InfoTooltip from "./InfoTooltip";
-import * as Auth from "./Auth";
+import * as Auth from "../utils/Auth";
 import newApi from "../utils/api";
 import {CurrentUserContext} from "../contexts/CurrentUserContext";
 import {Route, Switch, Redirect, useLocation, useHistory} from "react-router-dom";
@@ -161,42 +161,24 @@ function App() {
   function handleRegistration({email, password}) {
     console.log({email, password})
     Auth.registration({email, password})
-      .then((res) => {
-        console.log(res)
-        if (!res || res.statusCode === 400) {
-          setRegisterStatus(false)
-          handleRegister()
-          setData({email: '', password: ''}) //почему не обнуляются поля?
-          return
-        }
-
+      .then(() => {
         setRegisterStatus(true)
-        handleRegister();
+        setInfoToolTipOpen(true);
         history.push('/signin')
-        return res
       })
-      .catch((err) => {
-        console.log('error', err)
+      .catch(() => {
+        setRegisterStatus(false)
+        setInfoToolTipOpen(true);
       })
-  }
-
-  function handleRegister() {
-    setInfoToolTipOpen(true);
   }
 
   function handleAuthorization({email, password}) {
     Auth.authorization({email, password})
       .then((data) => {
         console.log(data)
-        if (!data) {throw new Error('Неверный логин или пароль')}
-
-        if (data.token) {
-          console.log(data.token)
-          localStorage.setItem('jwt', data.token);
-          setLoggedIn(true);
-          history.push('/');
-          return data;
-        }
+        localStorage.setItem('jwt', data.token);
+        setLoggedIn(true);
+        history.push('/');
       })
       .catch((err) => {
         console.log('error', err)
@@ -210,7 +192,6 @@ function App() {
         .then(({email, password}) => {
           if (email) {
             setLoggedIn(true);
-            // setData({email, password})
           }
         })
         .catch((err) => {
@@ -221,6 +202,11 @@ function App() {
 
   function handleLogOut() {
     localStorage.removeItem('jwt');
+    setData({
+      email: '',
+      password: ''
+    });
+    setLoggedIn(false);
     history.push('/signin');
   }
 
@@ -231,7 +217,7 @@ function App() {
           <Header currentPath={pathname}
                   onLogOut={handleLogOut}
                   email={data.email}
-                  />
+          />
           <Switch>
             <ProtectedRoute
               exact path="/"

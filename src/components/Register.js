@@ -10,9 +10,8 @@ const [data, setData] = React.useState({
 });
 
   function handleSubmit(e) {
-    let {email, password} = data;
+    const {email, password} = data;
     e.preventDefault();
-    setData({email: '', password: ''})
     props.onRegister({email, password})
   }
 
